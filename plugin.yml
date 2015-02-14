@@ -1,0 +1,36 @@
+name: ROCEndRegen
+version: ${project.version}
+description: Respawn enderdragon with a cooldown time to avoid abusive XP Farming.
+author: fastlockel
+main: com.roc.control.ROCEndRegen
+
+commands:
+  rocend:
+    description: rocend command.
+    aliases: []
+    usage: >
+      /<command>
+      [ reload
+      | regen
+      | respawn]
+
+permissions:
+  rocend.*:
+    description: >
+      Allow all commands.
+    children:
+      rocend.reload: true
+      rocend.regen: true
+      rocend.respawn: true
+  rocend.reload:
+    description: >
+      Reloads plugin.
+    default: op
+  rocend.regen:
+    description: >
+      Regen the end area .
+    default: op
+  rocend.respawn:
+    description: >
+      Respawn the enderdragon
+    default: op

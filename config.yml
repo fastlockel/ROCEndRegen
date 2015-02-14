@@ -1,0 +1,4 @@
+# Timer  (cooldown) area regen
+RegenDelay: 30
+# Timer  (cooldown) for enderdragon respawn
+RespawnDelay: 30
