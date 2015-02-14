@@ -17,10 +17,12 @@
 package com.roc.command;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.World.Environment;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 
 import com.roc.control.ROCEndRegen;
@@ -98,7 +100,12 @@ public class EndRegenCommands implements CommandExecutor
 		{
 			if (((Player)sender).getWorld().getEnvironment() == Environment.THE_END)
 			{
-				Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "summon enderdragon ~20 ~40 ~20");
+				//Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "summon enderdragon ~20 ~40 ~20");
+				Location playerLocation = ((Player)sender).getLocation();
+				int x = playerLocation.getBlockX();
+				int y = playerLocation.getBlockY();
+				int z = playerLocation.getBlockZ();
+				((Player)sender).getWorld().spawnCreature(playerLocation, EntityType.ENDER_DRAGON);
 				sender.sendMessage("Enderdragon respawned.");
 				_plugin.getConfig().respawn();
 			}
