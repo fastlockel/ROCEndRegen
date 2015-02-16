@@ -39,8 +39,8 @@ public class Configuration extends YamlConfiguration
 	{
 		try 
 		{
-			_regenDelay = f.getInt("RegenDelay", 10);
-			_respawnDelay = f.getInt("RespawnDelay", 10);
+			_regenDelay = f.getInt("RegenDelay", 30);
+			_respawnDelay = f.getInt("RespawnDelay", 30);
 		} 
 		catch (Exception e) 
 		{

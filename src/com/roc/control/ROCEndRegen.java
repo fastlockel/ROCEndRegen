@@ -17,6 +17,7 @@
 package com.roc.control;
 
 import org.bukkit.command.CommandExecutor;
+import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.roc.command.EndRegenCommands;
@@ -28,34 +29,38 @@ public class ROCEndRegen extends JavaPlugin
 
 	protected Configuration _conf;
 	
+	@Override
 	public void onLoad() 
 	{
+		saveDefaultConfig();
+		_conf = new Configuration();
+		_conf.load(getConfig(), getLogger());
+
 	}
 
 	@Override
 	public void onEnable() 
 	{
-		saveDefaultConfig();
-		_conf = new Configuration();
-		_conf.load(getConfig(), getLogger());
+		onLoad();
 	
 		 CommandExecutor endRegenExecutor = new EndRegenCommands(this);
 		 getCommand("rocend").setExecutor(endRegenExecutor);
 		 getLogger().info("ROCEndRegen started : "+getDescription().getVersion());
+		 getServer().getPluginManager().registerEvents(new ROCFightListener(), this);
 	}
 	
 	@Override
 	public void onDisable() 
 	{
 		_conf = null;
+		HandlerList.unregisterAll(this);
 		getLogger().info("ROCEndRegen disabled.");
 
 	}
 
 	public void reload()
 	{
-		_conf = new Configuration();
-		_conf.load(getConfig(), getLogger());
+		onLoad();
 		getLogger().info("ROCEndRegen reloaded.");
 	}
 	public Configuration getConfig()
