@@ -16,6 +16,7 @@
  */
 package com.roc.command;
 
+import java.io.File;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -126,6 +127,13 @@ public class PurgeRegionsCommand
 			}
 		}
 		Collections.sort(regionFiles);
+		// complete with prefix and suffix
+		List<String> regionFiles2 = new ArrayList<String>();
+		for(String s : regionFiles)
+		{
+			regionFiles2.add("r."+s+".mca");
+		}
+		regionFiles = regionFiles2;
 		System.out.println("Used regions files : "+regionFiles.size());
 		int c = 0;
 		for(String s : regionFiles)
@@ -138,7 +146,44 @@ public class PurgeRegionsCommand
 			System.out.print(s);
 		}
 		// now search for what we seek : UNUSED regions files ...
-		
+		File f = new File(".");
+		File regionFile = null;
+		while (regionFile == null && f.getParentFile() != null)
+		{
+		    File f1 = new File(f.getParentFile().getAbsolutePath()+File.separator+world+File.separator+"region");
+		    if (f1.exists() && f1.isDirectory())
+		    	regionFile = f1;
+		    else
+		    	f = f.getParentFile();
+		}
+		if (regionFile == null)
+		{
+			System.out.println("Folder not found for : "+File.separator+world+File.separator+"region in "+(new File(".")).getAbsolutePath());
+		}
+		else
+		{
+			File     archiveDir = new File(regionFile.getParentFile().getAbsolutePath()+File.separator+"archive");
+			if (!archiveDir.exists())
+				archiveDir.mkdir();
+			String[] rFiles = regionFile.list();
+			
+			int count = rFiles.length, toKeep = 0, toArchive=0;
+			for (String rf : rFiles)
+			{
+				if (!regionFiles.contains(rf))
+				{
+					toArchive++;
+					File toMove = new File(regionFile.getAbsolutePath()+File.separator+rf);
+					
+					toMove.renameTo(new File(archiveDir.getAbsolutePath()+File.separator+rf));
+					System.out.println("* archive "+rf+" --> "+toMove);
+
+				}
+				else
+					toKeep++;
+			}
+			System.out.println(" Total "+count+" toArchive: "+toArchive+"  toKeep: "+toKeep+"  detected: "+regionFiles.size());
+		}
 		return true;
 	}
 	
@@ -189,10 +234,10 @@ public class PurgeRegionsCommand
 		List<String> resu = new ArrayList<String>();
 		while (rs.next())
 		{
-			int minx = (int)rs.getDouble("minx");
-			int minz = (int)rs.getDouble("minz");
-			int maxx = (int)rs.getDouble("maxx");
-			int maxz = (int)rs.getDouble("maxz");
+			int minx = (int)rs.getDouble("min_x");
+			int minz = (int)rs.getDouble("min_z");
+			int maxx = (int)rs.getDouble("max_x");
+			int maxz = (int)rs.getDouble("max_z");
 			
 			int region_minx = minx >> 9; // 4 for chunck then 5 to region
 			int region_minz = minz >> 9; // 4 for chunck then 5 to region

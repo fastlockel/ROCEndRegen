@@ -32,7 +32,24 @@ regions:
       - 'select x, z from BungeeHomes where world=? order by x,z' 
       # JAILS 3
       - 'select `tp.x` as x, `tp.z` as z from j3_cells order by x,z' 
-    # must return minx,maxx and minzz, maxz
+      # Preciousstones
+      - 'select x, z from pstone_unbreakables where world=? order by x,z' 
+      - 'select x, z from pstone_storedblocks where world=? order by x,z' 
+      - 'select x, z from pstone_snitches where world=? order by x,z' 
+      - 'select x, z from pstone_grief_undo where world=? order by x,z' 
+      - 'select field_x as x, field_z as z from pstone_grief_undo where world=? order by x,z' 
+      - 'select x,z from pstone_fields where world=? order by x,z' 
+      # CoreProtect
+      - 'select x, z from co_sign,co_world where co_sign.wid=co_world.id and co_world.world=? order by x,z'
+      - 'select x, z from co_session,co_world where co_session.wid=co_world.id and co_world.world=? order by x,z'      
+      - 'select x, z from co_container,co_world where co_container.wid=co_world.id and co_world.world=? order by x,z'  
+      - 'select x, z from co_block,co_world where co_block.wid=co_world.id and co_world.world=? order by x,z'  
+   # must return minx,maxx and minzz, maxz
     query_areas:
-      - 'select aaaa as minx, aa as maxx, bbbb as minz, bbbb as maxz from toto1 where hhh'
-      
+      # worldguard
+      - 'select min_x, min_z, max_x, max_z from region_cuboid,world where region_cuboid.world_id=world.id and world.name=? order by min_x, min_z'  
+      # Preciousstones
+      - 'select (x-radius) as min_x, (x+radius) as max_x, (z-radius) as min_z, (z-radius) as max_z from pstone_fields where world=? order by min_x, min_z' 
+      - 'select minx as min_x, maxx as max_x, minz as min_z, maxz as max_z from pstone_cuboids where world=? order by min_x, min_z'
+      # PlotMe
+      - 'select bottomx as min_x, topx as max_x, bottomz as min_z, topz as max_z from plotmePlots where world=? order by min_x, min_z' 

@@ -47,6 +47,7 @@ public class DBManager
 	  
 	  if (connection != null)
 	  {
+		  System.out.println(">> "+query);
 		  _statement = connection.prepareStatement(query);
 	      // Result set get the result of the SQL query
 		  if (args != null && args.length > 0 && query.indexOf("=?")>0)
