@@ -2,3 +2,37 @@
 RegenDelay: 30
 # Timer  (cooldown) for enderdragon respawn
 RespawnDelay: 30
+# share XP in kill ratio and best player get the egg
+ShareXP: true
+# Give Egg (false) or Drop egg (true)
+DropEgg: true
+mysql:
+  use: true
+  host: 'localhost'
+  port: 3306
+  database: 'minecraft'
+  user: 'minecraft'
+  password: 'MinePwd'
+regions:
+  world:
+    name: 'world'
+    purge: true
+    archive: true
+    # must return x and y
+    query_points:
+      # LWC
+      - 'select x, z from lwc_protections where world=? order by x,z' 
+      # QUICKSHOP
+      - 'select x, z from shops where world=? order by x,z' 
+      # BungeeWarps
+      - 'select x, z from BungeeWarps where world=? order by x,z' 
+      # BungeeSpawns
+      - 'select x, z from BungeeSpawns where world=? order by x,z' 
+      # BungeeHomes
+      - 'select x, z from BungeeHomes where world=? order by x,z' 
+      # JAILS 3
+      - 'select `tp.x` as x, `tp.z` as z from j3_cells order by x,z' 
+    # must return minx,maxx and minzz, maxz
+    query_areas:
+      - 'select aaaa as minx, aa as maxx, bbbb as minz, bbbb as maxz from toto1 where hhh'
+      

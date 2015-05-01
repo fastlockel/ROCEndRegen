@@ -16,54 +16,43 @@
  */
 package com.roc.control;
 
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.event.HandlerList;
-import org.bukkit.plugin.java.JavaPlugin;
+import java.io.File;
+import java.io.InputStream;
 
 import com.roc.command.EndRegenCommands;
 import com.roc.config.Configuration;
 
-public class ROCEndRegen extends JavaPlugin 
+public class ROCEndRegenTest 
 {
 	public static final String pluginName = "ROCEndRegen";
 
 	protected Configuration _conf;
 	
-	@Override
 	public void onLoad() 
 	{
-		saveDefaultConfig();
+		//saveDefaultConfig();
 		_conf = new Configuration();
-		_conf.load(getConfig(), getLogger());
+		File f = new File("../config_test.yml");
+		
+		try
+		{
+			if (f.exists())
+				_conf.load(f);
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+		_conf.load(_conf, null);
 
 	}
-
-	@Override
-	public void onEnable() 
+	public static void main(String[] args)
 	{
-		onLoad();
-	
-		 CommandExecutor endRegenExecutor = new EndRegenCommands(this);
-		 getCommand("rocend").setExecutor(endRegenExecutor);
-		 getLogger().info("ROCEndRegen started : "+getDescription().getVersion());
-		 if (_conf != null && _conf.shareXP())
-			 getServer().getPluginManager().registerEvents(new ROCFightListener(), this);
-	}
-	
-	@Override
-	public void onDisable() 
-	{
-		 if (_conf != null && _conf.shareXP())
-			 HandlerList.unregisterAll(this);
-		_conf = null;
-		getLogger().info("ROCEndRegen disabled.");
-
-	}
-
-	public void reload()
-	{
-		onLoad();
-		getLogger().info("ROCEndRegen reloaded.");
+		ROCEndRegenTest test = new ROCEndRegenTest();
+		test.onLoad();
+		
+		EndRegenCommands cmds = new EndRegenCommands(test);
+		
+		cmds.onCommand(null, null, null, new String[] {"PurgeRegions"});
 	}
 	public Configuration getConfig()
 	{

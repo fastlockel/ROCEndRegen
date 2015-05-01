@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.entity.EnderDragon;
@@ -37,7 +38,15 @@ import org.bukkit.inventory.ItemStack;
 public class ROCFightListener implements Listener 
 {
 	public static Map<UUID, Damage> _damageTracker = new HashMap<UUID, Damage>();
-
+	long _lastDamage = 0;
+	public static void clear()
+	{
+		synchronized (_damageTracker) 
+		{
+			_damageTracker = new HashMap<UUID, Damage>();
+		}
+	}
+	
 	@EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
 	public void onEntityDamage(EntityDamageByEntityEvent e) 
 	{
@@ -59,6 +68,14 @@ public class ROCFightListener implements Listener
 			{
 				synchronized (_damageTracker) 
 				{
+					if ((System.currentTimeMillis() - _lastDamage ) > 900L*1000L)
+					{
+						ROCFightListener.clear(); // 15 minutes without damage : clear 
+					}
+				}
+				synchronized (_damageTracker) 
+				{
+					_lastDamage = System.currentTimeMillis();
 					Damage damage  = (Damage)_damageTracker.get(id);
 					
 					if (damage == null)
@@ -96,39 +113,38 @@ public class ROCFightListener implements Listener
 			{
 				for(Damage d : _damageTracker.values())
 				{
-					totalDamage += d.getDamage();
-					if (maxDamage < d.getDamage())
+					if (d != null)
 					{
-						maxDamagerId = d.getPlayerId();
+						totalDamage += d.getDamage();
+						if (maxDamage < d.getDamage())
+						{
+							maxDamagerId = d.getPlayerId();
+						}
 					}
 				}
 				Player p = Bukkit.getServer().getPlayer(maxDamagerId);
 				
-				if (p != null && p.isOnline())
+				if (p != null)
 				{
-					World world = e.getEntity().getLocation().getWorld();
-					
-					world.dropItemNaturally(p.getLocation(), new ItemStack(Material.DRAGON_EGG));
-					
-					if (_damageTracker.values().size() > 1)
-						p.sendMessage("Good fight, you are the best killer and got the enderdragon egg.");
-					else
-						p.sendMessage("You have received the enderdragon egg.");
-				}
-				if (totalDamage > 0)
-				{
-					double totalXP = 12000;
-					
-					for(Damage d : _damageTracker.values())
+					dropEgg(p);
+					if (totalDamage > 0)
 					{
-						int playerXP = (int) (totalXP * d.getDamage()/totalDamage);
+						double totalXP = 12000;
 						
-						p = Bukkit.getServer().getPlayer(d.getPlayerId());
-						
-						if (p.isOnline())
+						for(Damage d : _damageTracker.values())
 						{
-							p.giveExp(playerXP);
-							p.sendMessage("Good fight, you have received "+playerXP+" experience.");
+							if (d != null)
+							{
+								int playerXP = (int) (totalXP * d.getDamage() / totalDamage);
+								
+								p = Bukkit.getServer().getPlayer(d.getPlayerId());
+								
+								if (p != null && p.isOnline())
+								{
+									p.giveExp(playerXP);
+									p.sendMessage("Good fight, you have received "+playerXP+" experience.");
+								}
+							}
 						}
 					}
 				}
@@ -137,6 +153,29 @@ public class ROCFightListener implements Listener
 		}
 	}
 
+	public boolean dropEgg(Player p)
+	{
+		if (p != null && p.isOnline())
+		{
+			World world = p.getLocation().getWorld();
+			
+			if (world !=null)
+			{
+				Location loc = new Location(world, p.getLocation().getX()+1, p.getLocation().getY()+1, p.getLocation().getZ()+1);
+				
+				world.dropItemNaturally(loc, new ItemStack(Material.DRAGON_EGG));
+				
+				if (_damageTracker.values().size() > 1)
+					p.sendMessage("Good fight, you are the best killer and got the enderdragon egg.");
+				else
+					p.sendMessage("You have received the enderdragon egg.");
+			}
+			return true;
+		}
+		
+		return false;
+	}
+	
 	protected class Damage
 	{
 		UUID    _playerId;

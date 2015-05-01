@@ -12,7 +12,8 @@ commands:
       /<command>
       [ reload
       | regen
-      | respawn]
+      | respawn
+      | egg]
 
 permissions:
   rocend.*:
