@@ -1,6 +1,6 @@
 name: ROCEndRegen
 version: ${project.version}
-description: Respawn enderdragon with a cooldown time to avoid abusive XP Farming.
+description: Respawn enderdragon with a cooldown time to avoid abusive XP Farming. Regen databases and regions.
 author: fastlockel
 main: com.roc.control.ROCEndRegen
 
@@ -14,7 +14,12 @@ commands:
       | regen
       | respawn
       | egg]
-
+  purgeregions:
+    description: clear unused rca files.
+    aliases: []
+  purgeps:
+    description: clear unused ps data.
+    aliases: []
 permissions:
   rocend.*:
     description: >
@@ -23,6 +28,8 @@ permissions:
       rocend.reload: true
       rocend.regen: true
       rocend.respawn: true
+      rocend.purgeregions: true
+      rocend.purgeps: true
   rocend.reload:
     description: >
       Reloads plugin.
@@ -35,3 +42,12 @@ permissions:
     description: >
       Respawn the enderdragon
     default: op
+  rocend.purgeregions:
+    description: >
+      Archive unused Regions
+    default: op
+  rocend.purgeps:
+    description: >
+      Archive inactive PS infos
+    default: op
+  

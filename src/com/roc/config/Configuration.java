@@ -36,11 +36,14 @@ public class Configuration extends YamlConfiguration
 	protected String _mysql_user;
 	protected String _mysql_password;
 	
-	protected String _regions_world_name;
+	protected List<String> _regions_world_name;
 	protected boolean _regions_world_purge;
 	protected boolean _regions_world_archive;
 	protected List<String> _regions_world_query_points;
 	protected List<String> _regions_world_query_areas;
+	
+	protected int _ps_day_inactivity;
+	protected List<String> _ps_inactivity_queries;
 	
 	public Configuration() 
 	{
@@ -69,7 +72,7 @@ public class Configuration extends YamlConfiguration
 				_mysql_user = f.getString("mysql.user", "minecraft");
 				_mysql_password = f.getString("mysql.password", "minecraftPassword");
 				
-				_regions_world_name = f.getString("regions.world.name", "world");
+				_regions_world_name = (List<String>)f.getList("regions.world.name");
 				_regions_world_purge = f.getBoolean("regions.world.purge", false);
 				_regions_world_archive = f.getBoolean("regions.world.archive", true);
 			}
@@ -78,6 +81,9 @@ public class Configuration extends YamlConfiguration
 				_regions_world_query_points = (List<String>)f.getList("regions.world.query_points");
 				_regions_world_query_areas = (List<String>)f.getList("regions.world.query_areas");
 			}
+			_ps_day_inactivity = f.getInt("preciousstones.day-inactivity", 3306);
+			_ps_inactivity_queries = (List<String>)f.getList("preciousstones.queries");
+			
 		} 
 		catch (Exception e) 
 		{
@@ -170,7 +176,7 @@ public class Configuration extends YamlConfiguration
 	}
 
 
-	public String get_regions_world_name() {
+	public List<String> get_regions_world_name() {
 		return _regions_world_name;
 	}
 
@@ -194,6 +200,12 @@ public class Configuration extends YamlConfiguration
 		return _regions_world_query_areas;
 	}
 	
+	public List<String> getInactivityQueries() {
+		return _ps_inactivity_queries;
+	}
 	
+	public int getDayInactivity() {
+		return _ps_day_inactivity;
+	}
 	
 }

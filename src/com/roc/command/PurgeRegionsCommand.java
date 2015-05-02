@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 
 import com.roc.config.Configuration;
 import com.roc.control.ROCEndRegen;
@@ -55,16 +56,26 @@ public class PurgeRegionsCommand
 
 		if (args[0].equalsIgnoreCase("purgeregions"))
 		{
-			purgeRegions();
-			return true;
+			if (sender instanceof Player)
+				return purgeRegions((Player)sender);
+			else
+				return purgeRegions(null);
 		}
 		return false;
 	}
 
 
-	protected boolean purgeRegions() 
+	protected boolean purgeRegions(Player player) 
 	{
-		System.out.println("purge regions files");
+		if ((player != null) && !(player.hasPermission("rocend.purgeregions")))
+		{
+			player.sendMessage("Do not have the permission to purge regions.");
+			return true;
+		}
+		if (player != null)
+			player.sendMessage("Purge regions files.");
+		else
+			System.out.println("purge regions files");
 		
 		Configuration conf = _plugin == null ? _test.getConfig() : _plugin.getConfig();
 		
@@ -73,80 +84,98 @@ public class PurgeRegionsCommand
 		dbManager.getConnection(conf);
 		
 		List<String> regionFiles = new ArrayList<String>();
-		String world = conf.get_regions_world_name();
-		
-		if (conf.get_regions_world_query_points() != null)
+		List<String> worldList = conf.get_regions_world_name();
+		boolean ok = true;
+		for (String world : worldList)
 		{
-			List<String> queries = conf.get_regions_world_query_points();
-			for(String query : queries)
+			if (player != null)
+				player.sendMessage("Purge regions for "+world);
+			else
+				System.out.println("- Purge regions for "+world);
+
+			if (conf.get_regions_world_query_points() != null)
 			{
-				try
+				List<String> queries = conf.get_regions_world_query_points();
+				for(String query : queries)
 				{
-					ResultSet rs = dbManager.executeQuery(query, new String[] {world});
-					
-					List<String> current = decodeRegionPoints(rs);
-					
-					for(String s : current)
+					try
 					{
-						if (!regionFiles.contains(s))
-							regionFiles.add(s);
+						ResultSet rs = dbManager.executeQuery(query, new String[] {world});
+						
+						List<String> current = decodeRegionPoints(rs);
+						
+						for(String s : current)
+						{
+							if (!regionFiles.contains(s))
+								regionFiles.add(s);
+						}
+						rs.close();
+						dbManager.closeStatement();
 					}
-					rs.close();
-					dbManager.closeStatement();
-				}
-				catch (Exception e)
-				{
-					e.printStackTrace();
+					catch (Exception e)
+					{
+						e.printStackTrace();
+					}
 				}
 			}
-		}
-		if (conf.get_regions_world_query_areas() != null)
-		{
-			List<String> queries = conf.get_regions_world_query_areas();
+			if (conf.get_regions_world_query_areas() != null)
+			{
+				List<String> queries = conf.get_regions_world_query_areas();
+				
+				for(String query : queries)
+				{
+					try
+					{
+						ResultSet rs = dbManager.executeQuery(query, new String[] {world});
+						
+						List<String> current = decodeRegionAreas(rs);
+						
+						for(String s : current)
+						{
+							if (!regionFiles.contains(s))
+								regionFiles.add(s);
+						}
+						rs.close();
+						dbManager.closeStatement();
+					}
+					catch (Exception e)
+					{
+						e.printStackTrace();
+					}
+				}
+			}
+			dbManager.close();
+			Collections.sort(regionFiles);
+			// complete with prefix and suffix
+			List<String> regionFiles2 = new ArrayList<String>();
+			for(String s : regionFiles)
+			{
+				regionFiles2.add("r."+s+".mca");
+			}
+			regionFiles = regionFiles2;
 			
-			for(String query : queries)
+			System.out.println("Used regions files : "+regionFiles.size());
+/*			int c = 0;
+			for(String s : regionFiles)
 			{
-				try
-				{
-					ResultSet rs = dbManager.executeQuery(query, new String[] {world});
-					
-					List<String> current = decodeRegionAreas(rs);
-					
-					for(String s : current)
-					{
-						if (!regionFiles.contains(s))
-							regionFiles.add(s);
-					}
-					rs.close();
-					dbManager.closeStatement();
-				}
-				catch (Exception e)
-				{
-					e.printStackTrace();
-				}
-			}
+				c++;
+				if (c % 10 == 0)
+					System.out.println(",");
+				else if (c > 1) 
+					System.out.print(", ");
+				System.out.print(s);
+			}*/
+			ok = ok && cleanUpFiles(player, regionFiles, world);
 		}
-		Collections.sort(regionFiles);
-		// complete with prefix and suffix
-		List<String> regionFiles2 = new ArrayList<String>();
-		for(String s : regionFiles)
-		{
-			regionFiles2.add("r."+s+".mca");
-		}
-		regionFiles = regionFiles2;
-		System.out.println("Used regions files : "+regionFiles.size());
-		int c = 0;
-		for(String s : regionFiles)
-		{
-			c++;
-			if (c % 10 == 0)
-				System.out.println(",");
-			else if (c > 1) 
-				System.out.print(", ");
-			System.out.print(s);
-		}
+		return ok;
+	}
+	public boolean  cleanUpFiles(Player player, List<String> regionFiles, String world)
+	{
+
 		// now search for what we seek : UNUSED regions files ...
-		File f = new File(".");
+		File f = new File("");
+		f = new File(f.getAbsolutePath());
+		System.out.println(f.getAbsolutePath()+" : "+f.getParent());
 		File regionFile = null;
 		while (regionFile == null && f.getParentFile() != null)
 		{
@@ -158,7 +187,10 @@ public class PurgeRegionsCommand
 		}
 		if (regionFile == null)
 		{
-			System.out.println("Folder not found for : "+File.separator+world+File.separator+"region in "+(new File(".")).getAbsolutePath());
+			if (player != null)
+				player.sendMessage("\nFolder not found for : "+File.separator+world+File.separator+"region in "+(new File(".")).getAbsolutePath());
+			else
+				System.out.println("\nFolder not found for : "+File.separator+world+File.separator+"region in "+(new File(".")).getAbsolutePath());
 		}
 		else
 		{
@@ -182,7 +214,12 @@ public class PurgeRegionsCommand
 				else
 					toKeep++;
 			}
-			System.out.println(" Total "+count+" toArchive: "+toArchive+"  toKeep: "+toKeep+"  detected: "+regionFiles.size());
+			String msg = (" Total "+count+" toArchive: "+toArchive+"  toKeep: "+toKeep+"  detected: "+regionFiles.size());
+			if (player != null)
+				player.sendMessage(msg);
+			else
+				System.out.println(msg);
+
 		}
 		return true;
 	}
@@ -248,13 +285,13 @@ public class PurgeRegionsCommand
 			{
 				int i = region_maxx;
 				region_maxx = region_minx;
-				region_minx = i; // spwap
+				region_minx = i; // swap
 			}
 			if (region_minz > region_maxz)
 			{
 				int i = region_maxz;
 				region_maxz = region_minz;
-				region_minz = i; // spwap
+				region_minz = i; // swap
 			}
 			
 			for (int region_x = region_minx; region_x <= region_maxx; region_x++)

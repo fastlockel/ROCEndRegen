@@ -52,6 +52,7 @@ public class ROCEndRegenTest
 		
 		EndRegenCommands cmds = new EndRegenCommands(test);
 		
+		cmds.onCommand(null, null, null, new String[] {"PurgePS"});
 		cmds.onCommand(null, null, null, new String[] {"PurgeRegions"});
 	}
 	public Configuration getConfig()

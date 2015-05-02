@@ -79,6 +79,18 @@ public class EndRegenCommands implements CommandExecutor
 			
 			cmd.execute(sender, command, label, args);
 		}
+		else if (args[0].equalsIgnoreCase("purgeps"))
+		{
+			PurgePSCommand cmd;
+			
+			if (_plugin == null)
+				cmd = new PurgePSCommand(_test);
+			else
+				cmd = new PurgePSCommand(_plugin);
+				
+			
+			cmd.execute(sender, command, label, args);
+		}
 		return false;
 	}
 

@@ -4,7 +4,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.Statement;
+import java.util.List;
 import java.util.Properties;
 
 import com.roc.config.Configuration;
@@ -62,7 +62,26 @@ public class DBManager
 	  return  null;
   }
   
-  
+  public int executeUpdate(String query, List<Object> args) throws Exception
+  {
+	  int n = 0;
+	  Connection connection = getConnection(null);
+	  
+	  if (connection != null)
+	  {
+		  System.out.println(">> "+query+" : "+args);
+		  _statement = connection.prepareStatement(query);
+	      // Result set get the result of the SQL query
+		  if (args != null && args.size() > 0)
+		  {
+			  for (int i=0; i<args.size(); i++)
+				  _statement.setObject(i+1, args.get(i));
+		  }
+		  n = _statement.executeUpdate();
+		  _statement.close();
+	  }
+	  return  n;
+  }
 
   // You need to close the resultSet
   public void close() {
